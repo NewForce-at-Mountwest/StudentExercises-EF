@@ -19,6 +19,20 @@
     </dl>
 </div>
 <div>
+    <h5>@Html.DisplayNameFor(c => c.Instructors)</h5>
+    @foreach(var i in Model.Instructors)
+    {
+<p>@Html.DisplayFor(model => i.FirstName) @Html.DisplayFor(model => i.LastName)</p>
+    }
+</div>
+<div>
+    <h5>@Html.DisplayNameFor(c => c.Students)</h5>
+    @foreach (var i in Model.Students)
+    {
+        <p>@Html.DisplayFor(model => i.FirstName) @Html.DisplayFor(model => i.LastName)</p>
+    }
+</div>
+<div>
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>

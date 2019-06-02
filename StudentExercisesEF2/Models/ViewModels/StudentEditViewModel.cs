@@ -11,5 +11,9 @@ namespace StudentExercisesEF.Models.ViewModels
     {
         public Student Student { get; set; }
         public List<SelectListItem> CohortOptions { get; set; }
+
+        public List<SelectListItem> Exercises { get; set; }
+
+        public List<StudentExercise> AssignedExercises { get; set; }
     }
 }
