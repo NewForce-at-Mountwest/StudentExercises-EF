@@ -84,23 +84,17 @@ namespace StudentExercisesEF.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Student.FindAsync(id);
+            var student = await _context.Student
+                .Include(s=> s.Cohort)
+                .Include(s=> s.StudentExercises)
+                .ThenInclude(e=> e.Exercise)
+                .FirstOrDefaultAsync(s => s.Id == id);
             if (student == null)
             {
                 return NotFound();
             }
-
-            var cohorts = await _context.Cohort.ToListAsync();
-
-            var viewModel = new StudentEditViewModel()
-            {
-                Student = student,
-                CohortOptions = cohorts.Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Name
-                }).ToList()
-            };
+            StudentEditViewModel viewModel = new StudentEditViewModel(_context, student);
+           
             return View(viewModel);
         }
 
@@ -111,7 +105,7 @@ namespace StudentExercisesEF.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, StudentEditViewModel viewModel)
         {
-            var student = viewModel.Student;
+            var student = viewModel.student;
 
             if (id != student.Id)
             {
@@ -123,6 +117,7 @@ namespace StudentExercisesEF.Controllers
                 try
                 {
                     _context.Update(student);
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -142,7 +137,7 @@ namespace StudentExercisesEF.Controllers
             var cohorts = await _context.Cohort.ToListAsync();
             viewModel = new StudentEditViewModel()
             {
-                Student = student,
+                student = student,
                 CohortOptions = cohorts.Select(c => new SelectListItem
                 {
                     Value = c.Id.ToString(),
