@@ -70,6 +70,7 @@ namespace StudentExercisesEF.Controllers
         // GET: Students/Create
         public IActionResult Create()
         {
+            // Convert this to a view model!
             ViewData["CohortId"] = new SelectList(_context.Cohort, "Id", "Name");
             return View();
         }

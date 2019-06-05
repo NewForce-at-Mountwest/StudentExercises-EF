@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StudentExercisesEF.Data;
 using StudentExercisesEF.Models;
+using StudentExercisesEF.Models.ViewModels;
+using StudentExercisesEF.Models.ViewModels.ReportItems;
 
 namespace StudentExercisesEF.Controllers
 {
@@ -37,7 +39,7 @@ namespace StudentExercisesEF.Controllers
                 .Include(c => c.Students)
                 .Include(c => c.Instructors)
                 .FirstOrDefaultAsync(m => m.Id == id);
-                
+
             if (cohort == null)
             {
                 return NotFound();
@@ -148,9 +150,66 @@ namespace StudentExercisesEF.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Report(int? currentCohortId)
+        {
+
+            CohortReportViewModel vm = new CohortReportViewModel(_context);
+
+            // If we do a GET request with the cohort Id, 
+            if (currentCohortId != null)
+            {
+                // All student exercises for this cohort
+                List<StudentExercise> studentExercises = await _context.StudentExercise
+                    .Include(se => se.Exercise)
+                    .Include(se => se.Student)
+                    .Where(se => se.Student.CohortId == currentCohortId)
+                    .ToListAsync();
+
+                // Incomplete student exercises
+                List<StudentExercise> incompleteExercises = studentExercises.Where(se => !se.isComplete).ToList();
+                List<StudentExercise> completeExercies = studentExercises.Where(se => se.isComplete).ToList();
+
+
+                // Top three incomplete exercsies
+                // Need to attach to view model, change type in view model to report item
+                vm.mostWorkedOnExercises = (from se in incompleteExercises
+                                                          group se by se.ExerciseId into gr
+                                                          orderby gr.Count() descending
+                                                          select new ExerciseReportItem()
+                                                          {
+                                                              exercise = gr.ToList()[0].Exercise,
+                                                              numberOfStudents = gr.ToList().Count()
+                                                          }).Take(3).ToList();
+
+                // Which students have the most completed exercise?
+                vm.topThreeBusiestStudents = (from se in completeExercies
+                                       group se by se.StudentId into gr
+                                       orderby gr.Count() descending
+                                       select new StudentReportItem()
+                                       {
+                                           student = gr.ToList()[0].Student,
+                                           numberOfExercises = gr.ToList().Count()
+                                       }).Take(3).ToList();
+
+                // Who has the most assigned but incompleted exercises 
+                vm.topThreeLaziestStudents = (from se in incompleteExercises
+                                       group se by se.StudentId into gr
+                                       orderby gr.Count() descending
+                                       select new StudentReportItem()
+                                       {
+                                           student = gr.ToList()[0].Student,
+                                           numberOfExercises = gr.ToList().Count()
+                                       }).Take(3).ToList();
+            }
+            return View(vm);
+        }
+
         private bool CohortExists(int id)
         {
             return _context.Cohort.Any(e => e.Id == id);
         }
     }
+
+  
 }

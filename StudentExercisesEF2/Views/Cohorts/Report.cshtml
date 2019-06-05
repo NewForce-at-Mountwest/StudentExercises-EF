@@ -1,0 +1,69 @@
+﻿@model StudentExercisesEF.Models.ViewModels.CohortReportViewModel
+
+@{
+    ViewData["Title"] = "Report";
+}
+
+<h1>Report</h1>
+
+<div>
+    <h4>Cohort Report</h4>
+    <hr />
+    <form asp-action="Report" method="GET">
+        <div class="form-group">
+            <label class="control-label">Choose a cohort:</label>
+            <select asp-for="currentCohortId" class="form-control"
+                    asp-items="@Model.allCohorts"></select>
+            <span asp-validation-for="currentCohortId" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-block btn-outline-success">View Report</button>
+    </form>
+    <div>
+        <p>@Html.DisplayNameFor(model => model.mostWorkedOnExercises)</p>
+        @if (@Model.mostWorkedOnExercises.Count() > 0)
+        {
+            @foreach (var item in @Model.mostWorkedOnExercises)
+            {
+                <p>@Html.DisplayFor(model => item.exercise.Name);</p>
+                <p>@Html.DisplayFor(model => item.numberOfStudents);</p>
+
+
+            }
+
+        }
+
+    </div>
+    <div>
+        <p>@Html.DisplayNameFor(model => model.topThreeBusiestStudents)</p>
+        @if (@Model.mostWorkedOnExercises.Count() > 0)
+        {
+            @foreach (var item in @Model.topThreeBusiestStudents)
+            {
+                <p>@Html.DisplayFor(model => item.student.FirstName) @Html.DisplayFor(model => item.student.LastName)</p>
+                <p>@Html.DisplayFor(model => item.numberOfExercises);</p>
+
+
+            }
+
+        }
+    </div>
+    <div>
+        <p>@Html.DisplayNameFor(model => model.topThreeLaziestStudents)</p>
+        @if (@Model.topThreeLaziestStudents.Count() > 0)
+        {
+            @foreach (var item in @Model.topThreeLaziestStudents)
+            {
+                <p>@Html.DisplayFor(model => item.student.FirstName) @Html.DisplayFor(model => item.student.LastName)</p>
+                <p>@Html.DisplayFor(model => item.numberOfExercises);</p>
+
+
+            }
+
+        }
+
+    </div>
+</div>
+<div>
+
+    <a asp-action="Index">Back to List</a>
+</div>
