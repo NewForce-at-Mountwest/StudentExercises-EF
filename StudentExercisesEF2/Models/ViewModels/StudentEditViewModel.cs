@@ -16,9 +16,7 @@ namespace StudentExercisesEF.Models.ViewModels
 
         public List<SelectListItem> ExerciseOptions { get; set; }
 
-        public List<StudentExercise> AssignedExercises { get; set; }
-
-        public List<int> SelectedExercises { get; set; } 
+        public List<int> SelectedExercises { get; set; }
 
         private readonly ApplicationDbContext _context;
         public StudentEditViewModel()
@@ -32,31 +30,37 @@ namespace StudentExercisesEF.Models.ViewModels
 
             student = studentParam;
 
-            // Figure out how to make this async
-            var cohorts = _context.Cohort.ToList();
-
-            CohortOptions = cohorts.Select(c => new SelectListItem
-            {
-                Value = c.Id.ToString(),
-                Text = c.Name,
-                Selected = c.Id == student.CohortId
-            }).ToList();
-
-            AssignedExercises = _context.StudentExercise.Include(se => se.Exercise).Where(se => se.StudentId == studentParam.Id).ToList();
-
-            SelectedExercises = AssignedExercises.Select(se => se.Id).ToList();
-
-            var allExercises = _context.Exercise.ToList();
-
-            ExerciseOptions = allExercises.Select(e => new SelectListItem
-            {
-                Value = e.Id.ToString(),
-                Text = e.Name
-            }).ToList();
+            // Get a list of all the cohorts
+            // convert to a list of select list items
+            // Select the student's current cohort (i.e. the one that matches their cohortId property)
+            CohortOptions = _context.Cohort
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name,
+                    Selected = c.Id == student.CohortId
+                }).ToList();
 
 
+            // Get a list of JUST the id's of the exercises, we're going to use this with our asp-for helper in the view
+            SelectedExercises = _context.StudentExercise
+                .Include(se => se.Exercise) // Get all the student exercises and join in the Exercise table so we can read the exercise name
+                .Where(se => se.StudentId == studentParam.Id) // Filter them-- we only want ones assigned to THIS student
+                .Select(se => se.ExerciseId) // map over the student exercises and return their exercise Id's 
+                .ToList();
+
+
+
+            ExerciseOptions = _context.Exercise // Get ALL the exercises and conver them to a list of select list items
+                .Select(e => new SelectListItem
+                {
+                    Value = e.Id.ToString(),
+                    Text = e.Name
+                }).ToList();
 
 
         }
+
+
     }
 }
