@@ -36,9 +36,8 @@
             </div>
             <div class="form-group">
                 <label class="control-label">Assign exercises to @Model.student.FirstName</label>
-                <select multiple asp-for="SelectedExercises" class="form-control"
-                        asp-items="@Model.Exercises"></select>
-             
+                @Html.ListBoxFor(model => model.SelectedExercises, Model.ExerciseOptions)
+
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

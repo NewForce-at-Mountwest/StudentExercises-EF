@@ -76,6 +76,20 @@ namespace StudentExercisesEF.Controllers
             return View(student);
         }
 
+        private async Task<StudentEditViewModel> buildStudentEditViewModel(int? id)
+        {
+            var student = await _context.Student
+                .Include(s => s.Cohort)
+                .Include(s => s.StudentExercises)
+                .ThenInclude(e => e.Exercise)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            StudentEditViewModel viewModel = new StudentEditViewModel(_context, student);
+
+            return viewModel;
+
+        }
+
         // GET: Students/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -84,16 +98,13 @@ namespace StudentExercisesEF.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Student
-                .Include(s=> s.Cohort)
-                .Include(s=> s.StudentExercises)
-                .ThenInclude(e=> e.Exercise)
-                .FirstOrDefaultAsync(s => s.Id == id);
-            if (student == null)
+
+            StudentEditViewModel viewModel = await buildStudentEditViewModel(id);
+            if (viewModel.student == null)
             {
                 return NotFound();
             }
-            StudentEditViewModel viewModel = new StudentEditViewModel(_context, student);
+            
            
             return View(viewModel);
         }
@@ -105,24 +116,60 @@ namespace StudentExercisesEF.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, StudentEditViewModel viewModel)
         {
-            var student = viewModel.student;
-
-            if (id != student.Id)
-            {
-                return NotFound();
-            }
+            
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(student);
+                    
+
+                    // Get all the exercises that WERE assigned to the student before we edited
+                    List<StudentExercise> previouslyAssignedExercises = await _context.StudentExercise.Include(se => se.Exercise).Where(se => se.StudentId == id).ToListAsync();
+
+                    
+                    // Loop through the exercises that we just assigned 
+                    viewModel.SelectedExercises.ForEach(exerciseId =>
+                    {
+                        // Was the exercise already assigned? 
+                        // If so, do nothing-- we want to leave it alone so we can hold onto its completion status
+                        // If not
+                        if (!previouslyAssignedExercises.Any(studentExercise => studentExercise.ExerciseId == exerciseId))
+                        {
+                            StudentExercise newAssignment = new StudentExercise()
+                            {
+                                StudentId = id,
+                                ExerciseId = exerciseId,
+                                isComplete = false
+                            };
+
+                            // Add the newly assigned exercise to the student's list of assigned exercises
+                            _context.StudentExercise.Add(newAssignment);
+                           
+                        }
+                    });
+
+                    // Loop through previously assigned exercises and check if they're still assigned. If not, delete them from the student's list of assigned exercises.
+                    previouslyAssignedExercises.ForEach(studentExercise =>
+                    {
+                        if (!viewModel.SelectedExercises.Any(exerciseId => exerciseId == studentExercise.ExerciseId))
+                        {
+
+                            // remove from student exercises list
+                            _context.StudentExercise.Remove(studentExercise); 
+
+                        }
+
+                    });
+
+                    // Update the information about the student ( this includes cohortId property)
+                    _context.Update(viewModel.student);
 
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception e)
                 {
-                    if (!StudentExists(student.Id))
+                    if (!StudentExists(viewModel.student.Id))
                     {
                         return NotFound();
                     }
@@ -134,18 +181,10 @@ namespace StudentExercisesEF.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var cohorts = await _context.Cohort.ToListAsync();
-            viewModel = new StudentEditViewModel()
-            {
-                student = student,
-                CohortOptions = cohorts.Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Name
-                }).ToList()
-            };
- 
-            return View(viewModel);
+            // If the model state isn't valid, send us back the form with the same information
+            StudentEditViewModel newViewModel = await buildStudentEditViewModel(id);
+
+            return View(newViewModel);
         }
 
         // GET: Students/Delete/5
