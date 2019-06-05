@@ -9,6 +9,17 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+<h4>Search by first or last name:</h4>
+<form asp-action="Index" class="m-4" method="GET">
+    <div class="input-group mb-3 row">
+        <div class="input-group-prepend col-4-sm">
+            <span class="input-group-text" id="basic-addon1">Search</span>
+        </div>
+        <input type="text" name="searchQuery" class="form-control" aria-label="Search" aria-describedby="basic-addon1">
+    </div>
+    <a class="m2-3" asp-action="Index">Back to Full List</a>
+
+</form>
 <table class="table">
     <thead>
         <tr>

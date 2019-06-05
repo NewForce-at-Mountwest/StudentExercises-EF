@@ -21,12 +21,28 @@ namespace StudentExercisesEF.Controllers
         }
 
         // GET: Students
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchQuery)
         {
-            var applicationDbContext = _context.Student.Include(s => s.Cohort);
-            var students = await applicationDbContext
-                .OrderBy(s => s.LastName)
-                .ToListAsync();
+            List<Student> students = await _context.Student
+              .Include(s => s.Cohort)
+              .OrderBy(s => s.LastName)
+              .ToListAsync();
+
+            if (searchQuery != null)
+            {
+                string normalizedQuery = searchQuery.ToUpper();
+
+                students = students
+                    .Where(s =>
+                    s.FirstName.ToUpper()
+                    .Contains(normalizedQuery) ||
+                    s.LastName.ToUpper()
+                    .Contains(normalizedQuery))
+                    .ToList();
+
+            }
+
+
             return View(students);
         }
 
@@ -104,8 +120,8 @@ namespace StudentExercisesEF.Controllers
             {
                 return NotFound();
             }
-            
-           
+
+
             return View(viewModel);
         }
 
@@ -116,18 +132,18 @@ namespace StudentExercisesEF.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, StudentEditViewModel viewModel)
         {
-            
+
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    
+
 
                     // Get all the exercises that WERE assigned to the student before we edited
                     List<StudentExercise> previouslyAssignedExercises = await _context.StudentExercise.Include(se => se.Exercise).Where(se => se.StudentId == id).ToListAsync();
 
-                    
+
                     // Loop through the exercises that we just assigned 
                     viewModel.SelectedExercises.ForEach(exerciseId =>
                     {
@@ -145,7 +161,7 @@ namespace StudentExercisesEF.Controllers
 
                             // Add the newly assigned exercise to the student's list of assigned exercises
                             _context.StudentExercise.Add(newAssignment);
-                           
+
                         }
                     });
 
@@ -156,7 +172,7 @@ namespace StudentExercisesEF.Controllers
                         {
 
                             // remove from student exercises list
-                            _context.StudentExercise.Remove(studentExercise); 
+                            _context.StudentExercise.Remove(studentExercise);
 
                         }
 
