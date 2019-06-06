@@ -11,6 +11,9 @@ namespace StudentExercisesEF.Models
         public string LastName { get; set; }
         [Required]
         public string SlackHandle { get; set; }
+
+        public string Background { get; set; }
+
         [Required]
         public int CohortId { get; set; }
         public Cohort Cohort { get; set; }
