@@ -18,46 +18,32 @@
         </div>
         <button type="submit" class="btn btn-block btn-outline-success">View Report</button>
     </form>
+    <hr />
     <div>
-        <p>@Html.DisplayNameFor(model => model.mostWorkedOnExercises)</p>
+        <h5>@Html.DisplayNameFor(model => model.mostWorkedOnExercises)</h5>
         @if (@Model.mostWorkedOnExercises.Count() > 0)
         {
-            @foreach (var item in @Model.mostWorkedOnExercises)
-            {
-                <p>@Html.DisplayFor(model => item.exercise.Name);</p>
-                <p>@Html.DisplayFor(model => item.numberOfStudents);</p>
-
-
-            }
+            @await Html.PartialAsync("_ExerciseReportPartial", @Model.mostWorkedOnExercises)
 
         }
 
     </div>
+    <hr />
     <div>
-        <p>@Html.DisplayNameFor(model => model.topThreeBusiestStudents)</p>
+        <h5>@Html.DisplayNameFor(model => model.topThreeBusiestStudents)</h5>
         @if (@Model.mostWorkedOnExercises.Count() > 0)
         {
-            @foreach (var item in @Model.topThreeBusiestStudents)
-            {
-                <p>@Html.DisplayFor(model => item.student.FirstName) @Html.DisplayFor(model => item.student.LastName)</p>
-                <p>@Html.DisplayFor(model => item.numberOfExercises);</p>
-
-
-            }
+            @await Html.PartialAsync("_StudentReportPartial", @Model.topThreeBusiestStudents)
 
         }
     </div>
+    <hr />
     <div>
-        <p>@Html.DisplayNameFor(model => model.topThreeLaziestStudents)</p>
+        <h5>@Html.DisplayNameFor(model => model.topThreeLaziestStudents)</h5>
         @if (@Model.topThreeLaziestStudents.Count() > 0)
         {
-            @foreach (var item in @Model.topThreeLaziestStudents)
-            {
-                <p>@Html.DisplayFor(model => item.student.FirstName) @Html.DisplayFor(model => item.student.LastName)</p>
-                <p>@Html.DisplayFor(model => item.numberOfExercises);</p>
 
-
-            }
+            @await Html.PartialAsync("_StudentReportPartial", @Model.topThreeLaziestStudents)
 
         }
 

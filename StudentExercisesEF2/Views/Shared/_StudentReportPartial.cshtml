@@ -1,0 +1,21 @@
+﻿@model List<StudentExercisesEF.Models.ViewModels.ReportItems.StudentReportItem>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">
+                @Html.DisplayNameFor(model => model[0].student)
+            </th>
+            <th scope="col">
+                @Html.DisplayNameFor(model => model[0].numberOfExercises)
+            </th>
+        </tr>
+    </thead>
+
+    @foreach (var item in @Model)
+    {
+        <tr>
+            <td>@Html.DisplayFor(model => item.student.FirstName)</td>
+            <td>@Html.DisplayFor(model => item.numberOfExercises)</td>
+        </tr>
+    }
+</table>
