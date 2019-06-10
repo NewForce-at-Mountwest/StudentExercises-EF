@@ -17,5 +17,13 @@ namespace StudentExercisesEF.Data
         public DbSet<Exercise> Exercise { get; set; }
         public DbSet<Cohort> Cohort { get; set; }
         public DbSet<StudentExercise> StudentExercise { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+
+            modelBuilder.Entity<Cohort>().HasMany(cohort => cohort.Students)
+                        .WithOne(student => student.Cohort)
+                        .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }

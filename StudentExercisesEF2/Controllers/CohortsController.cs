@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -140,8 +141,20 @@ namespace StudentExercisesEF.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var cohort = await _context.Cohort.FindAsync(id);
-            _context.Cohort.Remove(cohort);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Cohort.Remove(cohort);
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception e)
+            {
+                // Add logic to handle deleting a cohort that's attached to students
+                // Options: archive the cohort, or throw an error message
+                ViewData["Error"] = "This cohort cannot be deleted because it contains students.";
+                return View(cohort);
+               
+            };
             return RedirectToAction(nameof(Index));
         }
 

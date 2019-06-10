@@ -72,17 +72,26 @@ namespace StudentExercisesEF.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            [Bind("Id,FirstName,LastName,SlackHandle,CohortId")] Student student)
+        public async Task<IActionResult> Create(StudentCreateViewModel vm)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(student);
+                _context.Add(vm.Student);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CohortId"] = new SelectList(_context.Cohort, "Id", "Name", student.CohortId);
-            return View(student);
+
+            // If the post fails, rebuild the view model and send it back to the view
+            List<Cohort> cohorts = await _context.Cohort.ToListAsync();
+
+            vm.CohortOptions = cohorts.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.Name
+            }).ToList();
+           
+
+            return View(vm);
         }
 
         // GET: Students/Edit/5
@@ -149,15 +158,11 @@ namespace StudentExercisesEF.Controllers
             }
 
             var cohorts = await _context.Cohort.ToListAsync();
-            viewModel = new StudentEditViewModel()
+            viewModel.CohortOptions = cohorts.Select(c => new SelectListItem
             {
-                Student = student,
-                CohortOptions = cohorts.Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Name
-                }).ToList()
-            };
+                Value = c.Id.ToString(),
+                Text = c.Name
+            }).ToList();
  
             return View(viewModel);
         }
