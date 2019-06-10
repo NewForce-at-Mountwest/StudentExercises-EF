@@ -52,10 +52,19 @@ namespace StudentExercisesEF.Controllers
         }
 
         // GET: Students/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["CohortId"] = new SelectList(_context.Cohort, "Id", "Name");
-            return View();
+            List<Cohort> cohorts = await _context.Cohort.ToListAsync();
+
+            var viewModel = new StudentCreateViewModel()
+            {
+                CohortOptions = cohorts.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                }).ToList()
+            };
+            return View(viewModel);
         }
 
         // POST: Students/Create
