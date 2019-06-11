@@ -35,10 +35,10 @@ namespace StudentExercisesEF.Controllers
                 return NotFound();
             }
 
-            var cohort = await _context.Cohort
+            Cohort cohort = await _context.Cohort
                 .Include(c => c.Students)
                 .Include(c => c.Instructors)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(matchingCohort=> matchingCohort.Id == id);
 
             if (cohort == null)
             {
